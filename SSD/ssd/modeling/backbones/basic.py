@@ -139,7 +139,7 @@ class BasicModel(torch.nn.Module):
                 padding=pad
             ),
             nn.GELU(),
-            nn.MaxPool2d(kernel_size= kernal_maxPool, stride = stride_maxPool),
+            #nn.MaxPool2d(kernel_size= kernal_maxPool, stride = stride_maxPool),
 
             nn.Conv2d(
                 in_channels=64,
@@ -298,7 +298,7 @@ class BasicModel(torch.nn.Module):
                 in_channels=output_channels[4],
                 out_channels=128,
                 kernel_size=kernal_conv,
-                stride=1,
+                stride=2,
                 padding=pad
             ),
             nn.BatchNorm2d(128),
@@ -308,7 +308,7 @@ class BasicModel(torch.nn.Module):
             nn.Conv2d(
                 in_channels=128,
                 out_channels=128,
-                kernel_size=kernal_conv,
+                kernel_size=2,
                 stride=1,
                 padding=pad
             ),
@@ -317,7 +317,7 @@ class BasicModel(torch.nn.Module):
             nn.Conv2d(
                 in_channels=128,
                 out_channels=output_channels[5],
-                kernel_size=kernal_conv,
+                kernel_size=2,
                 stride=1,
                 padding=0
             ),
@@ -350,11 +350,14 @@ class BasicModel(torch.nn.Module):
         out6 = self.feature_extractor6(out5)
 
         out_features = [out1,out2,out3,out4,out5,out6]
+        print("self.output_feature_shape", self.output_feature_shape)
+        
 
         for idx, feature in enumerate(out_features):
             out_channel = self.out_channels[idx]
             h, w = self.output_feature_shape[idx]
             expected_shape = (out_channel, h, w)
+            print("feature.shape[1:]", feature.shape[1:])
             assert feature.shape[1:] == expected_shape, \
                 f"Expected shape: {expected_shape}, got: {feature.shape[1:]} at output IDX: {idx}"
         assert len(out_features) == len(self.output_feature_shape),\
