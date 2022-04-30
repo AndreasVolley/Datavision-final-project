@@ -12,23 +12,25 @@ class FPN(torch.nn.Module):
         self.out_channels = output_channels
         self.output_feature_shape = output_feature_sizes
 
-        model = torchvision.models.resnet18(pretrained=True)
+        self.oldmodel = torchvision.models.resnet18(pretrained=True)
+        self.model = torch.nn.Sequential(*(list(self.oldmodel.children())[4:-2]))
 
         img = torch.zeros((1, 3, 128, 1024))
-        print("the model:", model)
-        x = model.conv1(img)
+        print("the model:", self.model)
+        x = self.model.conv1(img)
+        
         print("x:", x)
 
     def forward(self, x):
-         out1 = self.model.layer1()
+
+
+         out1 = self.model.layer1(x)
          out2 = self.model.layer2(out1)
          out3 = self.model.layer3(out2)
          out4 = self.model.layer4(out3)
-         out5 = self.model.layer5(out4)
-         out6 = self.model.layer6(out5)
         
 
-         out_features = [out1,out2,out3,out4,out5,out6]
+         out_features = [out1,out2,out3,out4]
          print("self.output_feature_shape", self.output_feature_shape)
         
 

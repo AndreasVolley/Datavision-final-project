@@ -14,11 +14,9 @@ train.image_channels = 3
 model.num_classes = 8 + 1  # Add 1 for background class
 
 
-train_cpu_transform = L(torchvision.transforms.Compose)(transforms=[
-    #L(RandomSampleCrop)(),
+train_cpu_transform = L(torchvision.transforms.Compose)(transforms=[ 
     L(ToTensor)(),
     L(Resize)(imshape="${train.imshape}"),
-    #L(RandomHorizontalFlip)(), 
     L(GroundTruthBoxesToAnchors)(anchors="${anchors}", iou_threshold=0.5),
 ])
 val_cpu_transform = L(torchvision.transforms.Compose)(transforms=[
