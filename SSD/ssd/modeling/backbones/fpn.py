@@ -49,7 +49,7 @@ class FPN(torch.nn.Module):
         )
         
         # Extract features from P2-P7
-        # self.feature_extractorFPN = torchvision.ops.FeaturePyramidNetwork([64, 128, 256, 512, 64, 64], 5)
+        self.feature_extractorFPN = torchvision.ops.FeaturePyramidNetwork([64, 128, 256, 512, 64, 64], 64)
 
     def forward(self, x):
 
@@ -62,18 +62,22 @@ class FPN(torch.nn.Module):
         P6 = self.feature_extractorP6(P5)
         P7 = self.feature_extractorP7(P6)
         
-        # FeatureMaps = OrderedDict()
-        # FeatureMaps['P2'] = P2
-        # FeatureMaps['P3'] = P3
-        # FeatureMaps['P4'] = P4
-        # FeatureMaps['P5'] = P5
-        # FeatureMaps['P6'] = P6
-        # FeatureMaps['P7'] = P7
+        FeatureMaps = OrderedDict()
+        FeatureMaps['P2'] = P2
+        FeatureMaps['P3'] = P3
+        FeatureMaps['P4'] = P4
+        FeatureMaps['P5'] = P5
+        FeatureMaps['P6'] = P6
+        FeatureMaps['P7'] = P7
         
-        # FPNout = self.feature_extractorFPN(FeatureMaps)
+        outFeatures = []
+        FPNout = self.feature_extractorFPN(FeatureMaps)
 
+        for k, v in FPNout.items():
+            # print(k, v.shape)
+            outFeatures.append(v)
         
-        outFeatures = [P2, P3, P4, P5, P6, P7]
+        # outFeatures = [P2, P3, P4, P5, P6, P7]
         
         # print("hei: ", outFeatures.shape)
         
