@@ -83,11 +83,6 @@ class BasicModel(torch.nn.Module):
         pad = 1
         drop_prop = 0.02
         
-        self.feature_extractor_A = nn.Sequential(     
-        )
-        self.feature_extractor_B = nn.Sequential()
-        self.feature_extractor_C = nn.Sequential()
-
         self.feature_extractor1 = nn.Sequential(
            
            #Added extra conv layers

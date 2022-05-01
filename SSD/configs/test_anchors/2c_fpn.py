@@ -1,9 +1,9 @@
-from SSD.ssd.modeling.backbones.fpn import FPN
+# from SSD.ssd.modeling.backbones.fpn import FPN
 from .t2b_data_augmentation import (
     train, optimizer, schedulers,
     loss_objective,
     model, 
-    #backbone,
+    # backbone,
     data_train,
     data_val,
     val_cpu_transform,
@@ -13,5 +13,7 @@ from .t2b_data_augmentation import (
     anchors)
 
 from tops.config import LazyCall as L
-#from ssd.modeling.backbones import FPN
-backbone = L(FPN)(type="resnet34", pretrained=True)
+from ssd.modeling.backbones.fpn import FPN
+backbone = L(FPN)(
+    output_channels = [64, 128, 256, 512]
+)
