@@ -30,4 +30,3 @@ data_train.dataset.transform  = L(torchvision.transforms.Compose)(transforms=[
     L(RandomHorizontalFlip)(), 
     L(GroundTruthBoxesToAnchors)(anchors=anchors, iou_threshold=0.5),
 ])
-
