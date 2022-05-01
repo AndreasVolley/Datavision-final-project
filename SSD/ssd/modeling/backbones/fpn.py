@@ -13,15 +13,25 @@ class FPN(torch.nn.Module):
         self.out_channels = output_channels
         self.output_feature_shape = output_feature_sizes
 
-        # self.oldmodel = torchvision.models.resnet18(pretrained=True)
+        self.oldModel = torchvision.models.resnet34(pretrained=True)
         # self.model = torch.nn.Sequential(*(list(self.oldmodel.children())[4:-2]))
         
         ## Add feature extractors
-        self.feature_extractorP2 = torch.nn.Sequential(*(list(self.oldmodel.children())[0:5]))
-        self.feature_extractorP3 = torch.nn.Sequential(*(list(self.oldmodel.children())[5]))
-        self.feature_extractorP4 = torch.nn.Sequential(*(list(self.oldmodel.children())[6]))
-        self.feature_extractorP5 = torch.nn.Sequential(*(list(self.oldmodel.children())[7]))
-        self.feature_extractorP6 = torch.nn.Sequential(
+        # 32x256
+        self.feature_extractorP2 = torch.nn.Sequential(
+            self.oldModel.conv1,
+            self.oldModel.bn1,
+            self.oldModel.relu,
+            self.oldModel.maxpool,
+            self.oldModel.layer1,
+        )
+        # self.feature_extractorP3 = torch.nn.Sequential(*(list(self.oldModel.children())[5]))
+        # self.feature_extractorP4 = torch.nn.Sequential(*(list(self.oldModel.children())[6]))
+        # self.feature_extractorP5 = torch.nn.Sequential(*(list(self.oldModel.children())[7]))
+        self.feature_extractorP3 = torch.nn.Sequential(self.oldModel.layer2) # 16x128
+        self.feature_extractorP4 = torch.nn.Sequential(self.oldModel.layer3) # 8x64
+        self.feature_extractorP5 = torch.nn.Sequential(self.oldModel.layer4) # 4x32
+        self.feature_extractorP6 = torch.nn.Sequential( # 2x16
             nn.Conv2d(
                 in_channels=image_channels,
                 out_channels=64,
@@ -30,7 +40,7 @@ class FPN(torch.nn.Module):
                 padding=True
             )
         )
-        self.feature_extractorP7 = torch.nn.Sequential(
+        self.feature_extractorP7 = torch.nn.Sequential( # 1x8
             nn.Conv2d(
                 in_channels=image_channels,
                 out_channels=64,
@@ -39,6 +49,9 @@ class FPN(torch.nn.Module):
                 padding=True
             )
         )
+        
+        # Extract features from P2-P5
+        
         
         self.feature_extractorFPN = torchvision.ops.FeaturePyramidNetwork([128, 256, 512, 1028, 64, 64], 128)
 
