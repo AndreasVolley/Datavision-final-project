@@ -27,6 +27,21 @@ def hard_negative_mining(loss, labels, neg_pos_ratio):
     return pos_mask | neg_mask
 
 
+def focalLossFunction(pred, gt, alpha=1, gamma=2):
+    """
+    focal loss function
+    Args:
+        pred: prediction
+        gt: ground truth
+        alpha: weight for positive examples
+        gamma: weight for hard examples
+    """
+    pred = F.softmax(pred, dim=1)
+    pred = pred.clamp(min=1e-5, max=1-1e-5)
+    loss = -gt*(alpha*torch.pow((1-pred), gamma)*torch.log(pred))
+    return loss.mean()
+
+
 class FocalLoss(nn.Module):
     """
         Implements the loss as the sum of the followings:
@@ -65,8 +80,8 @@ class FocalLoss(nn.Module):
         gt_bbox = gt_bbox.transpose(1, 2).contiguous() # reshape to [batch_size, 4, num_anchors]
         with torch.no_grad():
             to_log = - F.log_softmax(confs, dim=1)[:, 0]
-            mask = hard_negative_mining(to_log, gt_labels, 3.0)
-        classification_loss = F.cross_entropy(confs, gt_labels, reduction="none")
+            mask = hard_negative_mining(to_log, gt_labels, 3.0)       ##### replace hard_negative_mining with this line to use focal loss
+        classification_loss = F.cross_entropy(confs, gt_labels, reduction="none")   ##### replace F.cross_entropy with this line to use focal loss
         classification_loss = classification_loss[mask].sum()
 
         pos_mask = (gt_labels > 0).unsqueeze(1).repeat(1, 4, 1)
