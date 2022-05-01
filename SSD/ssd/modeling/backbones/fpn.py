@@ -6,7 +6,7 @@ from collections import OrderedDict
 
 
 class FPN(torch.nn.Module):
-    def __init__(self, output_channels: List[int]
+    def __init__(self, output_channels: List[int],
             #image_channels: int,
             #output_feature_sizes: List[Tuple[int]]
             ):
@@ -29,24 +29,24 @@ class FPN(torch.nn.Module):
         self.feature_extractorP3 = torch.nn.Sequential(self.oldModel.layer2)                # 16x128
         self.feature_extractorP4 = torch.nn.Sequential(self.oldModel.layer3)                # 8x64
         self.feature_extractorP5 = torch.nn.Sequential(self.oldModel.layer4)                # 4x32
-        # self.feature_extractorP6 = torch.nn.Sequential(                                     # 2x16
-        #     nn.Conv2d(
-        #         in_channels=512,
-        #         out_channels=64,
-        #         kernel_size=3,
-        #         stride=2,
-        #         padding=True
-        #     )
-        # )
-        # self.feature_extractorP7 = torch.nn.Sequential(                                     # 1x8
-        #     nn.Conv2d(
-        #         in_channels=64,
-        #         out_channels=64,
-        #         kernel_size=3,
-        #         stride=2,
-        #         padding=True
-        #     )
-        # )
+        self.feature_extractorP6 = torch.nn.Sequential(                                     # 2x16
+            nn.Conv2d(
+                in_channels=512,
+                out_channels=64,
+                kernel_size=3,
+                stride=2,
+                padding=1
+            )
+        )
+        self.feature_extractorP7 = torch.nn.Sequential(                                     # 1x8
+            nn.Conv2d(
+                in_channels=64,
+                out_channels=64,
+                kernel_size=3,
+                stride=2,
+                padding=1
+            )
+        )
         
         # Extract features from P2-P7
         # self.feature_extractorFPN = torchvision.ops.FeaturePyramidNetwork([64, 128, 256, 512, 64, 64], 5)
@@ -59,8 +59,8 @@ class FPN(torch.nn.Module):
         P3 = self.feature_extractorP3(P2)
         P4 = self.feature_extractorP4(P3)
         P5 = self.feature_extractorP5(P4)
-        # P6 = self.feature_extractorP6(P5)
-        # P7 = self.feature_extractorP7(P6)
+        P6 = self.feature_extractorP6(P5)
+        P7 = self.feature_extractorP7(P6)
         
         # FeatureMaps = OrderedDict()
         # FeatureMaps['P2'] = P2
@@ -73,7 +73,7 @@ class FPN(torch.nn.Module):
         # FPNout = self.feature_extractorFPN(FeatureMaps)
 
         
-        outFeatures = [P2, P3, P4, P5]
+        outFeatures = [P2, P3, P4, P5, P6, P7]
         
         # print("hei: ", outFeatures.shape)
         
