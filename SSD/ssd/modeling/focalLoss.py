@@ -40,11 +40,10 @@ def focalLossFunc(pred, target, alpha, gamma=2):
     Returns:
         loss: focal loss
     """
-    
-    c =-alpha * (1 - pred.softmax(dim=1)[1])
-    
+    alpha = alpha.to(pred.device)
+    target = F.one_hot(target, 9).transpose(1, 2)
     FL = -alpha * (1 - pred.softmax(dim=1)) ** gamma * target * F.log_softmax(pred, dim=1)
-    return FL.sum()
+    return FL
 
 
 class FocalLoss(nn.Module):
@@ -58,7 +57,7 @@ class FocalLoss(nn.Module):
         super().__init__()
         self.scale_xy = 1.0/anchors.scale_xy
         self.scale_wh = 1.0/anchors.scale_wh
-        self.alpha = alpha
+        self.alpha = alpha.view(1, -1, 1)
 
         self.sl1_loss = nn.SmoothL1Loss(reduction='none')
         self.anchors = nn.Parameter(anchors(order="xywh").transpose(0, 1).unsqueeze(dim = 0),
@@ -92,7 +91,7 @@ class FocalLoss(nn.Module):
         # classification_loss = F.cross_entropy(confs, gt_labels, reduction="none")       ##### replace F.cross_entropy with this line to use focal loss
         # classification_loss = classification_loss[mask].sum()                           ##### Remove
 
-        classification_loss = focalLossFunc(confs, gt_labels.float(), self.alpha).sum(dim=1).mean()
+        classification_loss = focalLossFunc(confs, gt_labels, self.alpha).sum(dim=1).mean()
 
         # 2. Compute Localization Loss
         pos_mask = (gt_labels > 0).unsqueeze(1).repeat(1, 4, 1)                         ##### Remove?
@@ -105,13 +104,13 @@ class FocalLoss(nn.Module):
         
         
         # 3. Compute Total Loss
-        total_loss = regression_loss/num_pos + classification_loss/num_pos              ##### Remove
+        total_loss = regression_loss/num_pos + classification_loss            ##### Remove
         # total_loss = regression_loss + classification_loss
         
         # 4. TensorBoard logging
         to_log = dict(                                                                  ##### Remove below
             regression_loss=regression_loss/num_pos,
-            classification_loss=classification_loss/num_pos,
+            classification_loss=classification_loss,
             total_loss=total_loss
         )                                           
         
