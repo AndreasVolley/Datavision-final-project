@@ -53,8 +53,7 @@ class FPN(torch.nn.Module):
 
     def forward(self, x):
 
-        # Only use P3-P7?
-
+        ## Custom Backbone
         P2 = self.feature_extractorP2(x)
         P3 = self.feature_extractorP3(P2)
         P4 = self.feature_extractorP4(P3)
@@ -62,6 +61,7 @@ class FPN(torch.nn.Module):
         P6 = self.feature_extractorP6(P5)
         P7 = self.feature_extractorP7(P6)
         
+        ## FPN
         FeatureMaps = OrderedDict()
         FeatureMaps['P2'] = P2
         FeatureMaps['P3'] = P3
@@ -73,13 +73,14 @@ class FPN(torch.nn.Module):
         outFeatures = []
         FPNout = self.feature_extractorFPN(FeatureMaps)
 
-        for k, v in FPNout.items():
-            # print(k, v.shape)
+        for _, v in FPNout.items():
             outFeatures.append(v)
+        
+        ## BiFPN?
+        
         
         # outFeatures = [P2, P3, P4, P5, P6, P7]
         
-        # print("hei: ", outFeatures.shape)
         
         # for idx, feature in enumerate(outFeatures):
         #     out_channel = self.out_channels[idx]
@@ -92,26 +93,3 @@ class FPN(torch.nn.Module):
         #    f"Expected that the length of the outputted features to be: {len(self.output_feature_shape)}, but it was: {len(outFeatures)}"
         
         return tuple(outFeatures)
-        
-        outFeatures = []
-        for _, v in FPNout.items():
-            outFeatures.append(v)
-
-        # Wrote P2-P5 below just to remove errors. Do not use. Use orderedDict Above^
-        # out_features = [P2,P3,P4,P5] 
-        
-        print("self.output_feature_shape", outFeatures.shape)
-        
-        # for idx, feature in enumerate(out_features):
-        #     out_channel = self.out_channels[idx]
-        #     h, w = self.output_feature_shape[idx]
-        #     expected_shape = (out_channel, h, w)
-        #     print("feature.shape[1:]", feature.shape[1:])
-        #     assert feature.shape[1:] == expected_shape, \
-        #         f"Expected shape: {expected_shape}, got: {feature.shape[1:]} at output IDX: {idx}"
-        # assert len(out_features) == len(self.output_feature_shape),\
-        #    f"Expected that the length of the outputted features to be: {len(self.output_feature_shape)}, but it was: {len(out_features)}"
-        
-        return tuple(outFeatures)
-
-

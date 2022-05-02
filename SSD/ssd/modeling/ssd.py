@@ -22,6 +22,8 @@ class SSD300(nn.Module):
         self.regression_heads = []
         self.classification_heads = []
 
+
+        ## Make this deeper
         # Initialize output heads that are applied to each feature map from the backbone.
         for n_boxes, out_ch in zip(anchors.num_boxes_per_fmap, self.feature_extractor.out_channels):
             self.regression_heads.append(nn.Conv2d(out_ch, n_boxes * 4, kernel_size=3, padding=1))

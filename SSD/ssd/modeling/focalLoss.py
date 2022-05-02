@@ -1,45 +1,50 @@
 import torch.nn as nn
 import torch
 import math
+import numpy as np
 import torch.nn.functional as F
 
-def hard_negative_mining(loss, labels, neg_pos_ratio):
+# def hard_negative_mining(loss, labels, neg_pos_ratio):
+#     """
+#     It used to suppress the presence of a large number of negative prediction.
+#     It works on image level not batch level.
+#     For any example/image, it keeps all the positive predictions and
+#      cut the number of negative predictions to make sure the ratio
+#      between the negative examples and positive examples is no more
+#      the given ratio for an image.
+#     Args:
+#         loss (N, num_priors): the loss for each example.
+#         labels (N, num_priors): the labels.
+#         neg_pos_ratio:  the ratio between the negative examples and positive examples.
+#     """
+#     pos_mask = labels > 0
+#     num_pos = pos_mask.long().sum(dim=1, keepdim=True)
+#     num_neg = num_pos * neg_pos_ratio
+
+#     loss[pos_mask] = -math.inf
+#     _, indexes = loss.sort(dim=1, descending=True)
+#     _, orders = indexes.sort(dim=1)
+#     neg_mask = orders < num_neg
+#     return pos_mask | neg_mask
+
+
+def focalLossFunc(pred, target, alpha, gamma=2):
     """
-    It used to suppress the presence of a large number of negative prediction.
-    It works on image level not batch level.
-    For any example/image, it keeps all the positive predictions and
-     cut the number of negative predictions to make sure the ratio
-     between the negative examples and positive examples is no more
-     the given ratio for an image.
+    focal loss
     Args:
-        loss (N, num_priors): the loss for each example.
-        labels (N, num_priors): the labels.
-        neg_pos_ratio:  the ratio between the negative examples and positive examples.
+        pred (N, num_classes): the output tensor of classification
+            logits.
+        target (N, num_classes): the ground truth tensor of classification.
+        alpha: the parameter of balanced cross entropy
+        gamma: the parameter of focal loss
+    Returns:
+        loss: focal loss
     """
-    pos_mask = labels > 0
-    num_pos = pos_mask.long().sum(dim=1, keepdim=True)
-    num_neg = num_pos * neg_pos_ratio
-
-    loss[pos_mask] = -math.inf
-    _, indexes = loss.sort(dim=1, descending=True)
-    _, orders = indexes.sort(dim=1)
-    neg_mask = orders < num_neg
-    return pos_mask | neg_mask
-
-
-def focalLossFunction(pred, gt, alpha=1, gamma=2):
-    """
-    focal loss function
-    Args:
-        pred: prediction
-        gt: ground truth
-        alpha: weight for positive examples
-        gamma: weight for hard examples
-    """
-    pred = F.softmax(pred, dim=1)
-    pred = pred.clamp(min=1e-5, max=1-1e-5)
-    loss = -gt*(alpha*torch.pow((1-pred), gamma)*torch.log(pred))
-    return loss.mean()
+    
+    c =-alpha * (1 - pred.softmax(dim=1)[1])
+    
+    FL = -alpha * (1 - pred.softmax(dim=1)) ** gamma * target * F.log_softmax(pred, dim=1)
+    return FL.sum()
 
 
 class FocalLoss(nn.Module):
@@ -53,6 +58,7 @@ class FocalLoss(nn.Module):
         super().__init__()
         self.scale_xy = 1.0/anchors.scale_xy
         self.scale_wh = 1.0/anchors.scale_wh
+        self.alpha = alpha
 
         self.sl1_loss = nn.SmoothL1Loss(reduction='none')
         self.anchors = nn.Parameter(anchors(order="xywh").transpose(0, 1).unsqueeze(dim = 0),
@@ -78,22 +84,41 @@ class FocalLoss(nn.Module):
             gt_label = [batch_size, num_anchors]
         """
         gt_bbox = gt_bbox.transpose(1, 2).contiguous() # reshape to [batch_size, 4, num_anchors]
-        with torch.no_grad():
-            to_log = - F.log_softmax(confs, dim=1)[:, 0]
-            mask = hard_negative_mining(to_log, gt_labels, 3.0)       ##### replace hard_negative_mining with this line to use focal loss
-        classification_loss = F.cross_entropy(confs, gt_labels, reduction="none")   ##### replace F.cross_entropy with this line to use focal loss
-        classification_loss = classification_loss[mask].sum()
+        
+        # 1. Compute Classification Loss
+        # with torch.no_grad():
+        #     to_log = - F.log_softmax(confs, dim=1)[:, 0]
+        #     mask = hard_negative_mining(to_log, gt_labels, 3.0)                         ##### replace hard_negative_mining with this line to use focal loss
+        # classification_loss = F.cross_entropy(confs, gt_labels, reduction="none")       ##### replace F.cross_entropy with this line to use focal loss
+        # classification_loss = classification_loss[mask].sum()                           ##### Remove
 
-        pos_mask = (gt_labels > 0).unsqueeze(1).repeat(1, 4, 1)
-        bbox_delta = bbox_delta[pos_mask]
+        classification_loss = focalLossFunc(confs, gt_labels.float(), self.alpha).sum(dim=1).mean()
+
+        # 2. Compute Localization Loss
+        pos_mask = (gt_labels > 0).unsqueeze(1).repeat(1, 4, 1)                         ##### Remove?
+        bbox_delta = bbox_delta[pos_mask]                                               ##### Remove if above
         gt_locations = self._loc_vec(gt_bbox)
-        gt_locations = gt_locations[pos_mask]
+        gt_locations = gt_locations[pos_mask]                                           ##### Remove if above
         regression_loss = F.smooth_l1_loss(bbox_delta, gt_locations, reduction="sum")
-        num_pos = gt_locations.shape[0]/4
-        total_loss = regression_loss/num_pos + classification_loss/num_pos
-        to_log = dict(
+        num_pos = gt_locations.shape[0]/4                                               ##### Remove
+        
+        
+        
+        # 3. Compute Total Loss
+        total_loss = regression_loss/num_pos + classification_loss/num_pos              ##### Remove
+        # total_loss = regression_loss + classification_loss
+        
+        # 4. TensorBoard logging
+        to_log = dict(                                                                  ##### Remove below
             regression_loss=regression_loss/num_pos,
             classification_loss=classification_loss/num_pos,
             total_loss=total_loss
-        )
+        )                                           
+        
+        # to_log = dict(
+        #     regression_loss=regression_loss,
+        #     classification_loss=classification_loss,
+        #     total_loss=total_loss
+        # )
+        
         return total_loss, to_log
