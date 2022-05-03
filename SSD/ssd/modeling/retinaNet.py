@@ -64,10 +64,11 @@ class RetinaNet(nn.Module):
             for param in layer.parameters():
                 if param.dim() > 1: nn.init.xavier_uniform_(param)
         
-        ## Change 65520 to self.anchor_encoder.num_anchors
-        p = 0.99
-        backgroundClass = torch.log(torch.tensor(p * (9 -1) / (1 - p)))
-        self.classification_heads[-1].bias.data[:65520] = backgroundClass
+        if self.anchor_prob_initialization:
+            ## Change 65520 to self.anchor_encoder.num_anchors
+            p = 0.99
+            backgroundClass = torch.log(torch.tensor(p * (9 -1) / (1 - p)))
+            self.classification_heads[-1].bias.data[:65520] = backgroundClass
         
 
     def regress_boxes(self, features):
