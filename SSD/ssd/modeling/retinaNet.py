@@ -48,6 +48,7 @@ class RetinaNet(nn.Module):
         )
         
         # Initialize output heads that are applied to each feature map from the backbone.
+
         # for n_boxes, out_ch in zip(anchors.num_boxes_per_fmap, self.feature_extractor.out_channels):
         #     self.regression_heads.append(nn.Conv2d(out_ch, n_boxes * 4, kernel_size=3, padding=1))
         #     self.classification_heads.append(nn.Conv2d(out_ch, n_boxes * self.num_classes, kernel_size=3, padding=1))
@@ -80,7 +81,6 @@ class RetinaNet(nn.Module):
             p = 0.99
             backgroundClass = torch.log(torch.tensor(p * (9 -1) / (1 - p)))
             self.classification_heads[-1].bias.data[:65520] = backgroundClass
-                    
 
     def regress_boxes(self, features):
         locations = []
