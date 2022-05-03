@@ -16,12 +16,14 @@ from ssd.modeling.retinaNet import RetinaNet
 
 train.imshape = (128, 1024)
 
+anchors.aspect_ratios=[[2, 3], [2, 3], [2, 3], [2, 3], [2, 3], [2, 3]]
+
 model = L(RetinaNet)(
     feature_extractor=backbone,
     anchors=anchors,
     loss_objective=loss_objective,
     num_classes = 9,
-    anchor_prob_initialization = True,
+    anchor_prob_initialization = False,
 )
 
 
