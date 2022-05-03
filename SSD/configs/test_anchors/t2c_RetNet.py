@@ -15,6 +15,7 @@ from tops.config import LazyCall as L
 from ssd.modeling.retinaNet import RetinaNet
 
 train.imshape = (128, 1024)
+anchors.aspect_ratios = [[2,3], [2, 3], [2, 3], [2, 3], [2,3], [2,3]]
 
 model = L(RetinaNet)(
     feature_extractor=backbone,
