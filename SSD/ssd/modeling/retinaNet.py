@@ -92,12 +92,6 @@ class RetinaNet(nn.Module):
         backgroundClass = torch.log(torch.tensor(p * (9 -1) / (1 - p)))
         self.classification_heads[-1].bias.data[:65520] = backgroundClass
         
-                
-                # ## Only initialize the classification head if the flag is true
-                # if self.anchor_prob_initialization:
-                #     if layer == self.classification_heads[-1]:
-                #         # To be changed
-                #         layer.bias = nn.Parameter(torch.zeros(layer.bias.shape))
 
     def regress_boxes(self, features):
         locations = []
