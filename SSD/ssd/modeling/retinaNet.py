@@ -48,32 +48,10 @@ class RetinaNet(nn.Module):
         )
         
         # Initialize output heads that are applied to each feature map from the backbone.
-<<<<<<< HEAD
-        for n_boxes, out_ch in zip(anchors.num_boxes_per_fmap, self.feature_extractor.out_channels):
-            self.regression_heads.append(nn.Conv2d(out_ch, n_boxes * 4, kernel_size=3, padding=1))
-            self.regression_heads.append(nn.ReLU())
-            self.regression_heads.append(nn.Conv2d(n_boxes * 4, n_boxes * 4, kernel_size=3, padding=1))
-            self.regression_heads.append(nn.ReLU())
-            self.regression_heads.append(nn.Conv2d(n_boxes * 4, n_boxes * 4, kernel_size=3, padding=1))
-            self.regression_heads.append(nn.ReLU())
-            self.regression_heads.append(nn.Conv2d(n_boxes * 4, n_boxes * 4, kernel_size=3, padding=1))
-            #self.regression_heads.append(nn.ReLU())
-            #self.regression_heads.append(nn.Linear(n_boxes * 4 * 3 * 3 * n_boxes * 4, n_boxes * 4))
-            self.classification_heads.append(nn.Conv2d(out_ch, n_boxes * self.num_classes, kernel_size=3, padding=1))
-            self.classification_heads.append(nn.ReLU())
-            self.classification_heads.append(nn.Conv2d(n_boxes * self.num_classes, n_boxes * self.num_classes, kernel_size=3, padding=1))
-            self.classification_heads.append(nn.ReLU())
-            self.classification_heads.append(nn.Conv2d(n_boxes * self.num_classes, n_boxes * self.num_classes, kernel_size=3, padding=1))
-            self.classification_heads.append(nn.ReLU())
-            self.classification_heads.append(nn.Conv2d(n_boxes * self.num_classes, n_boxes * self.num_classes, kernel_size=3, padding=1))
-            self.classification_heads.append(nn.ReLU())
-            self.classification_heads.append(nn.Conv2d(n_boxes * self.num_classes, n_boxes * self.num_classes, kernel_size=3, padding=1))
-            #self.classification_heads.append(nn.Softmax)
-=======
+
         # for n_boxes, out_ch in zip(anchors.num_boxes_per_fmap, self.feature_extractor.out_channels):
         #     self.regression_heads.append(nn.Conv2d(out_ch, n_boxes * 4, kernel_size=3, padding=1))
         #     self.classification_heads.append(nn.Conv2d(out_ch, n_boxes * self.num_classes, kernel_size=3, padding=1))
->>>>>>> 0304c4ee8278619fb53ce82be9f21291739dd1ea
 
         # self.regression_heads = nn.ModuleList(self.regression_heads)
         # self.classification_heads = nn.ModuleList(self.classification_heads)
@@ -93,6 +71,12 @@ class RetinaNet(nn.Module):
             backgroundClass = torch.log(torch.tensor(p * (9 -1) / (1 - p)))
             self.classification_heads[-1].bias.data[:65520] = backgroundClass
         
+                
+                # ## Only initialize the classification head if the flag is true
+                # if self.anchor_prob_initialization:
+                #     if layer == self.classification_heads[-1]:
+                #         # To be changed
+                #         layer.bias = nn.Parameter(torch.zeros(layer.bias.shape))
 
     def regress_boxes(self, features):
         locations = []
