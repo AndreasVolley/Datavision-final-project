@@ -62,14 +62,25 @@ class RetinaNet(nn.Module):
         layers = [*self.regression_heads, *self.classification_heads]
         for layer in layers:
             for param in layer.parameters():
-                if param.dim() > 1: nn.init.xavier_uniform_(param)
+                if param.dim() > 1: nn.init.xavier_uniform_(param)    
         
         if self.anchor_prob_initialization:
+            self.classification_heads[0].bias.data.fill_(0)
+            self.classification_heads[2].bias.data.fill_(0)
+            self.classification_heads[4].bias.data.fill_(0)
+            self.classification_heads[6].bias.data.fill_(0)
+            
+            self.regression_heads[0].bias.data.fill_(0)
+            self.regression_heads[2].bias.data.fill_(0)
+            self.regression_heads[4].bias.data.fill_(0)
+            self.regression_heads[6].bias.data.fill_(0)
+
+            print("True")            
             ## Change 65520 to self.anchor_encoder.num_anchors
             p = 0.99
             backgroundClass = torch.log(torch.tensor(p * (9 -1) / (1 - p)))
             self.classification_heads[-1].bias.data[:65520] = backgroundClass
-        
+                    
 
     def regress_boxes(self, features):
         locations = []
