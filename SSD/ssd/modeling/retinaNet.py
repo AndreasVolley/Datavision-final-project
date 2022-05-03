@@ -25,32 +25,30 @@ class RetinaNet(nn.Module):
         self.anchor_prob_initialization = anchor_prob_initialization
         
         
-        # self.regression_head = nn.Sequential(
-        #     nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1),
-        #     nn.relu,
-        #     nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1),
-        #     nn.relu,
-        #     nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1),
-        #     nn.relu,
-        #     nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1),
-        #     nn.relu,
-        #     nn.Linear(64, ),
-        # )
+        self.regression_heads = nn.Sequential(
+            nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1),
+            nn.ReLU(),
+            nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1),
+            nn.ReLU(),
+            nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1),
+            nn.ReLU(),
+            nn.Conv2d(64, 6 * 4, kernel_size=3, stride=1, padding=1),
+        )
         
-        # self.classification_head = nn.Sequential(
-        #     nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1),
-        #     nn.relu,
-        #     nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1),
-        #     nn.relu,
-        #     nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1),
-        #     nn.relu,
-        #     nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1),
-        #     nn.relu,
-        #     nn.Conv2d(64, 9*9, kernel_size=3, stride=1, padding=1),
-        #     nn.softmax,
-        # )
+        self.classification_heads = nn.Sequential(
+            nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1),
+            nn.ReLU(),
+            nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1),
+            nn.ReLU(),
+            nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1),
+            nn.ReLU(),
+            nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1),
+            nn.ReLU(),
+            nn.Conv2d(64, 6 * self.num_classes, kernel_size=3, stride=1, padding=1),
+        )
         
         # Initialize output heads that are applied to each feature map from the backbone.
+<<<<<<< HEAD
         for n_boxes, out_ch in zip(anchors.num_boxes_per_fmap, self.feature_extractor.out_channels):
             self.regression_heads.append(nn.Conv2d(out_ch, n_boxes * 4, kernel_size=3, padding=1))
             self.regression_heads.append(nn.ReLU())
@@ -71,11 +69,14 @@ class RetinaNet(nn.Module):
             self.classification_heads.append(nn.ReLU())
             self.classification_heads.append(nn.Conv2d(n_boxes * self.num_classes, n_boxes * self.num_classes, kernel_size=3, padding=1))
             #self.classification_heads.append(nn.Softmax)
+=======
+        # for n_boxes, out_ch in zip(anchors.num_boxes_per_fmap, self.feature_extractor.out_channels):
+        #     self.regression_heads.append(nn.Conv2d(out_ch, n_boxes * 4, kernel_size=3, padding=1))
+        #     self.classification_heads.append(nn.Conv2d(out_ch, n_boxes * self.num_classes, kernel_size=3, padding=1))
+>>>>>>> 0304c4ee8278619fb53ce82be9f21291739dd1ea
 
-
-
-        self.regression_heads = nn.ModuleList(self.regression_heads)
-        self.classification_heads = nn.ModuleList(self.classification_heads)
+        # self.regression_heads = nn.ModuleList(self.regression_heads)
+        # self.classification_heads = nn.ModuleList(self.classification_heads)
         self.anchor_encoder = AnchorEncoder(anchors)
         self._init_weights()
 
@@ -85,18 +86,25 @@ class RetinaNet(nn.Module):
         for layer in layers:
             for param in layer.parameters():
                 if param.dim() > 1: nn.init.xavier_uniform_(param)
+        
+        ## Change 65520 to self.anchor_encoder.num_anchors
+        p = 0.99
+        backgroundClass = torch.log(torch.tensor(p * (9 -1) / (1 - p)))
+        self.classification_heads[-1].bias.data[:65520] = backgroundClass
+        
                 
-                ## Only initialize the classification head if the flag is true
-                if self.anchor_prob_initialization:
-                    if layer == self.classification_heads[-2]:
-                        layer.bias = nn.Parameter(torch.zeros(layer.bias.shape))
+                # ## Only initialize the classification head if the flag is true
+                # if self.anchor_prob_initialization:
+                #     if layer == self.classification_heads[-1]:
+                #         # To be changed
+                #         layer.bias = nn.Parameter(torch.zeros(layer.bias.shape))
 
     def regress_boxes(self, features):
         locations = []
         confidences = []
-        for idx, x in enumerate(features):
-            bbox_delta = self.regression_heads[idx](x).view(x.shape[0], 4, -1)
-            bbox_conf = self.classification_heads[idx](x).view(x.shape[0], self.num_classes, -1)
+        for _, x in enumerate(features):
+            bbox_delta = self.regression_heads(x).view(x.shape[0], 4, -1)
+            bbox_conf = self.classification_heads(x).view(x.shape[0], self.num_classes, -1)
             locations.append(bbox_delta)
             confidences.append(bbox_conf)
         bbox_delta = torch.cat(locations, 2).contiguous()
