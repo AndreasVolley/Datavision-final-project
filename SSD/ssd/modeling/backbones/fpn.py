@@ -32,7 +32,8 @@ class FPN(torch.nn.Module):
         self.feature_extractorP6 = torch.nn.Sequential(                                     # 2x16
             nn.Conv2d(
                 in_channels=512,
-                out_channels=64,
+                #out_channels=64,
+                out_channels=256,  
                 kernel_size=3,
                 stride=2,
                 padding=1
@@ -40,8 +41,10 @@ class FPN(torch.nn.Module):
         )
         self.feature_extractorP7 = torch.nn.Sequential(                                     # 1x8
             nn.Conv2d(
-                in_channels=64,
-                out_channels=64,
+                #in_channels=64,
+                #out_channels=64,
+                in_channels=256,
+                out_channels=256,
                 kernel_size=3,
                 stride=2,
                 padding=1
@@ -49,7 +52,8 @@ class FPN(torch.nn.Module):
         )
         
         # Extract features from P2-P7
-        self.feature_extractorFPN = torchvision.ops.FeaturePyramidNetwork([64, 128, 256, 512, 64, 64], 64)
+        #self.feature_extractorFPN = torchvision.ops.FeaturePyramidNetwork([64, 128, 256, 512, 64, 64], 64)
+        self.feature_extractorFPN = torchvision.ops.FeaturePyramidNetwork([64, 128, 256, 512, 256, 256], 256)
 
     def forward(self, x):
 

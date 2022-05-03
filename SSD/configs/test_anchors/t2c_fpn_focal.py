@@ -21,7 +21,8 @@ from ssd.modeling.backbones.fpn import FPN
 from ssd.modeling.focalLoss import FocalLoss
 
 backbone = L(FPN)(
-    output_channels = [64, 64, 64, 64, 64, 64],       #Change according to the output of the backbone. [64, 128, 256, 512, 64, 64]
+    #output_channels = [64, 64, 64, 64, 64, 64], 
+    output_channels = [256, 256, 256, 256, 256, 256]      #Change according to the output of the backbone. [64, 128, 256, 512, 64, 64]
 )
 
 loss_objective = L(FocalLoss)(anchors="${anchors}", alpha=torch.tensor([10, *[1000 for i in range(model.num_classes-1)]]))
