@@ -20,31 +20,31 @@ class RetinaNet(nn.Module):
         self.feature_extractor = feature_extractor
         self.loss_func = loss_objective
         self.num_classes = num_classes
-        self.regression_heads = []
-        self.classification_heads = []
+        # self.regression_heads = []
+        # self.classification_heads = []
         self.anchor_prob_initialization = anchor_prob_initialization
         
         
         self.regression_heads = nn.Sequential(
-            nn.Conv2d(256, 64, kernel_size=3, stride=1, padding=1),
+            nn.Conv2d(256, 256, kernel_size=3, stride=1, padding=1),
             nn.ReLU(),
-            nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1),
+            nn.Conv2d(256, 256, kernel_size=3, stride=1, padding=1),
             nn.ReLU(),
-            nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1),
+            nn.Conv2d(256, 256, kernel_size=3, stride=1, padding=1),
             nn.ReLU(),
-            nn.Conv2d(64, 6 * 4, kernel_size=3, stride=1, padding=1),
+            nn.Conv2d(256, 6 * 4, kernel_size=3, stride=1, padding=1),
         )
         
         self.classification_heads = nn.Sequential(
-            nn.Conv2d(256, 64, kernel_size=3, stride=1, padding=1),
+            nn.Conv2d(256, 256, kernel_size=3, stride=1, padding=1),
             nn.ReLU(),
-            nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1),
+            nn.Conv2d(256, 256, kernel_size=3, stride=1, padding=1),
             nn.ReLU(),
-            nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1),
+            nn.Conv2d(256, 256, kernel_size=3, stride=1, padding=1),
             nn.ReLU(),
-            nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1),
+            nn.Conv2d(256, 256, kernel_size=3, stride=1, padding=1),
             nn.ReLU(),
-            nn.Conv2d(64, 6 * self.num_classes, kernel_size=3, stride=1, padding=1),
+            nn.Conv2d(256, 6 * self.num_classes, kernel_size=3, stride=1, padding=1),
         )
         
         # Initialize output heads that are applied to each feature map from the backbone.
