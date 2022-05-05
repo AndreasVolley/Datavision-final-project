@@ -129,6 +129,17 @@ def analyze_something(dataloader, cfg):
     # plt.grid(True)
 
     # plt.savefig('hist_other_ratios.png')
+    
+    n, bins, patches = plt.hist(box_ratios, 150)
+
+    plt.xlabel('Size (square root of bounding box area) [px]')
+    plt.ylabel('Intensity')
+    plt.title('Histogram of bounding box sizes in dataset')
+    plt.xlim(0, 300)
+    plt.ylim(0, 4000)
+    plt.grid(True)
+    
+    plt.savefig('hist_sizes.png')
 
 
 def main():
