@@ -58,7 +58,7 @@ class FocalLoss(nn.Module):
             confs: [batch_size, num_classes, num_anchors]
             gt_bbox: [batch_size, num_anchors, 4]
             gt_label = [batch_size, num_anchors]
-        """
+        """        
         gt_bbox = gt_bbox.transpose(1, 2).contiguous()
         classification_loss = focalLossFunc(confs, gt_labels, self.alpha).sum(dim=1).mean()
 
@@ -66,7 +66,8 @@ class FocalLoss(nn.Module):
         pos_mask = (gt_labels > 0).unsqueeze(1).repeat(1, 4, 1)                         ##### Remove?
         bbox_delta = bbox_delta[pos_mask]                                               ##### Remove if above
         gt_locations = self._loc_vec(gt_bbox)
-        gt_locations = gt_locations[pos_mask]                                           ##### Remove if above
+        gt_locations = gt_locations[pos_mask]
+        
         regression_loss = F.smooth_l1_loss(bbox_delta, gt_locations, reduction="sum")
         num_pos = gt_locations.shape[0]/4                                               ##### Remove
         
