@@ -99,9 +99,18 @@ class FPN(torch.nn.Module):
             self.oldModel.maxpool,
             self.oldModel.layer1,
         )
+        nn.GELU(),
+        nn.Dropout2d(p=0.2),
         self.feature_extractorP3 = torch.nn.Sequential(self.oldModel.layer2)                # 16x128
+        nn.GELU(),
+        nn.Dropout2d(p=0.2),
         self.feature_extractorP4 = torch.nn.Sequential(self.oldModel.layer3)                # 8x64
+        nn.GELU(),
+        nn.Dropout2d(p=0.2),
         self.feature_extractorP5 = torch.nn.Sequential(self.oldModel.layer4)                # 4x32
+        nn.GELU(),
+        nn.Dropout2d(p=0.2),
+
         self.feature_extractorP6 = torch.nn.Sequential(                                     # 2x16
             nn.Conv2d(
                 in_channels=512,
@@ -109,16 +118,21 @@ class FPN(torch.nn.Module):
                 kernel_size=3,
                 stride=2,
                 padding=1
-            )
+            ),
+            nn.BatchNorm2d(256),
+            nn.GELU(),
         )
-        self.feature_extractorP7 = torch.nn.Sequential(                                     # 1x8
+        self.feature_extractorP7 = torch.nn.Sequential(                                    # 1x8
             nn.Conv2d(
                 in_channels=256,
                 out_channels=256,
                 kernel_size=3,
                 stride=2,
                 padding=1
-            )
+            ),
+            nn.GELU(),
+            nn.Dropout2d(p=0.05)
+    
         )
         
         self.convP7 = torch.nn.Conv2d(in_channels=256, out_channels=256, kernel_size=1, stride=1)
