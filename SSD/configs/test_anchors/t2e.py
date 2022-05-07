@@ -1,8 +1,8 @@
-from .t2c_fpn_focal import (
+from .t2c_fpn_focal_heads_bias import (
     train, optimizer, schedulers,
     loss_objective,
     # model, 
-    backbone,
+    # backbone,
     data_train,
     data_val,
     val_cpu_transform,
@@ -13,9 +13,14 @@ from .t2c_fpn_focal import (
 
 from tops.config import LazyCall as L
 from ssd.modeling.retinaNet_shallow import RetinaNet
+from ssd.modeling.backbones.fpn_shallow import FPN
 
 train.imshape = (128, 1024)
-anchors.aspect_ratios = [[2, 3], [2, 3], [2, 3], [2, 3], [2, 3], [2, 3]]
+
+backbone = L(FPN)(
+    output_channels = [256, 256, 256, 256, 256, 256],
+    flag = "fpnDeep" 
+)
 
 model = L(RetinaNet)(
     feature_extractor=backbone,
@@ -23,7 +28,7 @@ model = L(RetinaNet)(
     loss_objective=loss_objective,
     num_classes = 9,
     anchor_prob_initialization = True,
-    flag = "fpn_focal_heads_bias",
+    flag = "deepFPN",
 )
 
 

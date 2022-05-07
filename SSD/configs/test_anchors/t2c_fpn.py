@@ -21,4 +21,5 @@ from ssd.modeling.backbones.fpn_shallow import FPN
 
 backbone = L(FPN)(
     output_channels = [64, 64, 64, 64, 64, 64], 
+    flag = "fpn"
 )

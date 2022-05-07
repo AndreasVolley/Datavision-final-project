@@ -10,16 +10,23 @@ from torch.autograd import Variable
 
 class FPN(torch.nn.Module):
     def __init__(self, output_channels: List[int],
+                 flag,
             #image_channels: int,
             #output_feature_sizes: List[Tuple[int]]
             ):
         super().__init__()
         self.out_channels = output_channels
+        self.flag = flag
         # self.output_feature_shape = output_feature_sizes
 
         self.oldModel = torchvision.models.resnet34(pretrained=True)
         # self.model = torch.nn.Sequential(*(list(self.oldmodel.children())[4:-2]))
         
+        if self.flag == "fpn":
+            chan = 64
+        elif self.flag == "fpnDeep":
+            chan = 256
+                
         ## Add feature extractors
         ###############################################################################################################
         self.feature_extractorP2 = torch.nn.Sequential(                                     # 32x256
@@ -35,7 +42,7 @@ class FPN(torch.nn.Module):
         self.feature_extractorP6 = torch.nn.Sequential(                                     # 2x16
             nn.Conv2d(
                 in_channels=512,
-                out_channels=64,  
+                out_channels=chan,  
                 kernel_size=3,
                 stride=2,
                 padding=1
@@ -43,8 +50,8 @@ class FPN(torch.nn.Module):
         )
         self.feature_extractorP7 = torch.nn.Sequential(                                    # 1x8
             nn.Conv2d(
-                in_channels=64,
-                out_channels=64,
+                in_channels=chan,
+                out_channels=chan,
                 kernel_size=3,
                 stride=2,
                 padding=1
@@ -52,7 +59,7 @@ class FPN(torch.nn.Module):
         )
 
         # FPN
-        self.feature_extractorFPN = torchvision.ops.FeaturePyramidNetwork([64, 128, 256, 512, 64, 64], 64)
+        self.feature_extractorFPN = torchvision.ops.FeaturePyramidNetwork([64, 128, 256, 512, chan, chan], chan)
 
     def forward(self, x):
 
