@@ -10,7 +10,8 @@ class RetinaNet(nn.Module):
             anchors,
             loss_objective,
             num_classes: int,
-            anchor_prob_initialization):
+            anchor_prob_initialization,
+            flag):
         super().__init__()
         """
             Implements the SSD network.
@@ -20,39 +21,40 @@ class RetinaNet(nn.Module):
         self.feature_extractor = feature_extractor
         self.loss_func = loss_objective
         self.num_classes = num_classes
-        # self.regression_heads = []
-        # self.classification_heads = []
+        self.regression_heads = []
+        self.classification_heads = []
         self.anchor_prob_initialization = anchor_prob_initialization
-        
-        
-        self.regression_heads = nn.Sequential(
-            nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1),
-            nn.ReLU(),
-            nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1),
-            nn.ReLU(),
-            nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1),
-            nn.ReLU(),
-            nn.Conv2d(64, 6 * 4, kernel_size=3, stride=1, padding=1),
-        )
-        
-        self.classification_heads = nn.Sequential(
-            nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1),
-            nn.ReLU(),
-            nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1),
-            nn.ReLU(),
-            nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1),
-            nn.ReLU(),
-            nn.Conv2d(64, 6 * self.num_classes, kernel_size=3, stride=1, padding=1),
-        )
+        self.flag = flag
         
         # Initialize output heads that are applied to each feature map from the backbone.
+        
+        
+        if self.flag == "fpn_focal_heads" or self.flag == "fpn_focal_heads_bias":
+            in_chan, out_chan = 64, 64
+        elif self.flag == "deepFPN": 
+            in_chan, out_chan = 256, 64
+        elif self.flag == "deepHeads":
+            in_chan, out_chan = 256, 256
+            
+        self.regression_heads = nn.Sequential(
+            nn.Conv2d(in_chan, out_chan, kernel_size=3, stride=1, padding=1),
+            nn.ReLU(),
+            nn.Conv2d(out_chan, out_chan, kernel_size=3, stride=1, padding=1),
+            nn.ReLU(),
+            nn.Conv2d(out_chan, out_chan, kernel_size=3, stride=1, padding=1),
+            nn.ReLU(),
+            nn.Conv2d(out_chan, 6 * 4, kernel_size=3, stride=1, padding=1),
+        )
+        self.classification_heads = nn.Sequential(
+            nn.Conv2d(in_chan, out_chan, kernel_size=3, stride=1, padding=1),
+            nn.ReLU(),
+            nn.Conv2d(out_chan, out_chan, kernel_size=3, stride=1, padding=1),
+            nn.ReLU(),
+            nn.Conv2d(out_chan, out_chan, kernel_size=3, stride=1, padding=1),
+            nn.ReLU(),
+            nn.Conv2d(out_chan, 6 * self.num_classes, kernel_size=3, stride=1, padding=1),
+        )         
 
-        # for n_boxes, out_ch in zip(anchors.num_boxes_per_fmap, self.feature_extractor.out_channels):
-        #     self.regression_heads.append(nn.Conv2d(out_ch, n_boxes * 4, kernel_size=3, padding=1))
-        #     self.classification_heads.append(nn.Conv2d(out_ch, n_boxes * self.num_classes, kernel_size=3, padding=1))
-
-        # self.regression_heads = nn.ModuleList(self.regression_heads)
-        # self.classification_heads = nn.ModuleList(self.classification_heads)
         self.anchor_encoder = AnchorEncoder(anchors)
         self._init_weights()
 
@@ -61,24 +63,25 @@ class RetinaNet(nn.Module):
         layers = [*self.regression_heads, *self.classification_heads]
         for layer in layers:
             for param in layer.parameters():
-                if param.dim() > 1: nn.init.xavier_uniform_(param)    
-        
-        if self.anchor_prob_initialization:
-            self.classification_heads[0].bias.data.fill_(0)
-            self.classification_heads[2].bias.data.fill_(0)
-            self.classification_heads[4].bias.data.fill_(0)
-            self.classification_heads[6].bias.data.fill_(0)
-            
-            self.regression_heads[0].bias.data.fill_(0)
-            self.regression_heads[2].bias.data.fill_(0)
-            self.regression_heads[4].bias.data.fill_(0)
-            self.regression_heads[6].bias.data.fill_(0)
+                if param.dim() > 1: nn.init.xavier_uniform_(param)  
+                  
+        if self.flag == "fpn_focal_heads_bias" or self.flag == "deepFPN" or self.flag == "deepHeads":
+            if self.anchor_prob_initialization:
+                self.classification_heads[0].bias.data.fill_(0)
+                self.classification_heads[2].bias.data.fill_(0)
+                self.classification_heads[4].bias.data.fill_(0)
+                self.classification_heads[6].bias.data.fill_(0)
+                
+                self.regression_heads[0].bias.data.fill_(0)
+                self.regression_heads[2].bias.data.fill_(0)
+                self.regression_heads[4].bias.data.fill_(0)
+                self.regression_heads[6].bias.data.fill_(0)
 
-            print("True")            
-            ## Change 65520 to self.anchor_encoder.num_anchors
-            p = 0.99
-            backgroundClass = torch.log(torch.tensor(p * (9 -1) / (1 - p)))
-            self.classification_heads[-1].bias.data[:65520] = backgroundClass
+                print("True")            
+                ## Change 65520 to self.anchor_encoder.num_anchors
+                p = 0.99
+                backgroundClass = torch.log(torch.tensor(p * (9 -1) / (1 - p)))
+                self.classification_heads[-1].bias.data[:65520] = backgroundClass
 
     def regress_boxes(self, features):
         locations = []

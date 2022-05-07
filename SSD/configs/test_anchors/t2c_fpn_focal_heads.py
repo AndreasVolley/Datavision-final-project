@@ -23,6 +23,7 @@ model = L(RetinaNet)(
     loss_objective=loss_objective,
     num_classes = 9,
     anchor_prob_initialization = False,
+    flag = "fpn_focal_heads",
 )
 
 
