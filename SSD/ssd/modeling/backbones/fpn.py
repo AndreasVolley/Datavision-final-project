@@ -175,16 +175,16 @@ class FPN(torch.nn.Module):
         P7 = self.feature_extractorP7(P6)
         
         # After this 256 feature maps
-        P2 = self.convP2(P2)
-        P3 = self.convP3(P3)
-        P4 = self.convP4(P4)
-        P5 = self.convP5(P5)
-        P6 = self.convP6(P6)
-        P7 = self.convP7(P7)
+        # P2 = self.convP2(P2)
+        # P3 = self.convP3(P3)
+        # P4 = self.convP4(P4)
+        # P5 = self.convP5(P5)
+        # P6 = self.convP6(P6)
+        # P7 = self.convP7(P7)
         
             
         #BiFPN        
-        BiFPNout = self.biFPNs([P2, P3, P4, P5, P6, P7])        
+        #BiFPNout = self.biFPNs([P2, P3, P4, P5, P6, P7])        
         
         ## CAM
         # from pytorch_grad_cam import GradCAM
@@ -197,7 +197,7 @@ class FPN(torch.nn.Module):
         # cam_output = cam_output[0, :]
         # viz = show_cam_on_image(rgb_img, cam_output, use_rgb=True)
                 
-        return tuple(BiFPNout)
+        #return tuple(BiFPNout)
         
         ## FPN
         FeatureMaps = OrderedDict()
