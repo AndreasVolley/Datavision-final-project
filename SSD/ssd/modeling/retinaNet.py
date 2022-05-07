@@ -26,24 +26,33 @@ class RetinaNet(nn.Module):
         
         
         self.regression_heads = nn.Sequential(
+            
             nn.Conv2d(256, 256, kernel_size=3, stride=1, padding=1),
-            nn.ReLU(),
+            #nn.BatchNorm2d(256),
+            nn.GELU(),
+
             nn.Conv2d(256, 256, kernel_size=3, stride=1, padding=1),
-            nn.ReLU(),
+            nn.GELU(),
+
             nn.Conv2d(256, 256, kernel_size=3, stride=1, padding=1),
-            nn.ReLU(),
+            nn.GELU(),
+            #nn.Dropout2d(p=0.05),
+
             nn.Conv2d(256, 6 * 4, kernel_size=3, stride=1, padding=1),
         )
         
         self.classification_heads = nn.Sequential(
             nn.Conv2d(256, 256, kernel_size=3, stride=1, padding=1),
-            nn.ReLU(),
+            #nn.BatchNorm2d(256),
+            nn.GELU(),
+            
             nn.Conv2d(256, 256, kernel_size=3, stride=1, padding=1),
-            nn.ReLU(),
+            nn.GELU(),
+
             nn.Conv2d(256, 256, kernel_size=3, stride=1, padding=1),
-            nn.ReLU(),
-            nn.Conv2d(256, 256, kernel_size=3, stride=1, padding=1),
-            nn.ReLU(),
+            nn.GELU(),
+            #nn.Dropout2d(p=0.05),
+
             nn.Conv2d(256, 6 * self.num_classes, kernel_size=3, stride=1, padding=1),
         )
         
