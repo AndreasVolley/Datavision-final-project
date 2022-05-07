@@ -1,4 +1,6 @@
 import sys
+
+from regex import S
 assert sys.version_info >= (3, 7), "This code requires python version >= 3.7"
 import functools
 import time
@@ -63,8 +65,11 @@ def print_config(cfg):
 @click.argument("config_path", type=click.Path(exists=True, dir_okay=False, path_type=Path))
 @click.option("--evaluate-only", default=False, is_flag=True, help="Only run evaluation, no training.")
 def train(config_path: Path, evaluate_only: bool):
+    
+    torch.autograd.set_detect_anomaly(True)
     logger.logger.DEFAULT_SCALAR_LEVEL = logger.logger.DEBUG
     cfg = utils.load_config(config_path)
+    
     print_config(cfg)
 
     tops.init(cfg.output_dir)
@@ -73,6 +78,7 @@ def train(config_path: Path, evaluate_only: bool):
     dataloader_train = instantiate(cfg.data_train.dataloader)
     dataloader_val = instantiate(cfg.data_val.dataloader)
     cocoGt = dataloader_val.dataset.get_annotations_as_coco()
+    print(cocoGt)
     model = tops.to_cuda(instantiate(cfg.model))
     optimizer = instantiate(cfg.optimizer, params=utils.tencent_trick(model))
     scheduler = ChainedScheduler(instantiate(list(cfg.schedulers.values()), optimizer=optimizer))
@@ -101,6 +107,38 @@ def train(config_path: Path, evaluate_only: bool):
     dummy_input = tops.to_cuda(torch.randn(1, cfg.train.image_channels, *cfg.train.imshape))
     tops.print_module_summary(model, (dummy_input,))
     start_epoch = logger.epoch()
+    
+    ## WTF
+    ##########################################################################################################################
+    dataTrain = iter(dataloader_train)
+    dataVal = iter(dataloader_val)
+    
+    for i in range(50):
+        data = next(dataTrain)
+        img = data['image']
+        annot = data['boxes']
+    
+        print("############################################################")
+        print("img: ", img.shape)
+        print("annot: ", annot.shape)
+        print("############################################################")
+        
+    for i in range(10):
+        data = next(dataVal)
+        img = data['image']
+        
+        print("############################################################")
+        print("img: ", img.shape)
+        print("############################################################")
+        
+    # for i in range(49):
+    #     data = next(datal)['image']
+    #     print("############################################################")
+    #     print(data.shape)
+    #     print("############################################################")
+    
+    
+    
     for epoch in range(start_epoch, cfg.train.epochs):
         start_epoch_time = time.time()
         train_epoch(model, scaler, optimizer, dataloader_train, scheduler, gpu_transform_train, cfg.train.log_interval)
