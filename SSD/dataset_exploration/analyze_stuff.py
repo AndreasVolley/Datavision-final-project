@@ -25,6 +25,7 @@ def get_dataloader(cfg, dataset_to_visualize):
 
 def analyze_something(dataloader, cfg):
     box_ratios = []
+    box_sizes = []
     label_dict = dict.fromkeys(range(9), 0)
     for batch in tqdm(dataloader):
         print("batch['labels].shape: ", batch["labels"].shape)
@@ -39,10 +40,23 @@ def analyze_something(dataloader, cfg):
         for box in batch["boxes"]:
             for shape in box:
                 ratio = (shape[2]-shape[0])*1024/((shape[3]-shape[1])*128) # ratio = 1:bredde/høyde
+                size = np.sqrt((shape[2]-shape[0])*1024*((shape[3]-shape[1])*128))
                 box_ratios.append(float(ratio))
+                box_sizes.append(float(size))
     
     print("Total boxes: ", len(box_ratios))
     print("Total labels: ", label_dict)
+    
+    n, bins, patches = plt.hist(box_sizes, 200)
+
+    plt.xlabel('Size (square root of bounding box area) [px]')
+    plt.ylabel('Intensity')
+    plt.title('Histogram of bounding box sizes in dataset')
+    plt.xlim(0, 120)
+    plt.ylim(0, 3000)
+    plt.grid(True)
+    
+    plt.savefig('hist_sizes.png')
     
     mean = sum(box_ratios) / len(box_ratios)
     var = sum((l-mean)**2 for l in box_ratios) / len(box_ratios)
@@ -129,17 +143,7 @@ def analyze_something(dataloader, cfg):
     # plt.grid(True)
 
     # plt.savefig('hist_other_ratios.png')
-    
-    n, bins, patches = plt.hist(box_ratios, 150)
 
-    plt.xlabel('Size (square root of bounding box area) [px]')
-    plt.ylabel('Intensity')
-    plt.title('Histogram of bounding box sizes in dataset')
-    plt.xlim(0, 300)
-    plt.ylim(0, 4000)
-    plt.grid(True)
-    
-    plt.savefig('hist_sizes.png')
 
 
 def main():
@@ -153,5 +157,5 @@ def main():
     analyze_something(dataloader, cfg)
 
 
-if __name__ == '_main_':
+if __name__ == '__main__':
     main()

@@ -57,7 +57,7 @@ model = L(SSD300)(
 #     lr=5e-3, momentum=0.9, weight_decay=0.0005
 # )
 optimizer = L(torch.optim.Adam)(
-    lr=4e-4
+    lr=4e-4,
     #weight_decay=0.0005
 )
 
