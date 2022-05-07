@@ -64,14 +64,7 @@ class BiFPNBlock(torch.nn.Module):
         DP5 = self.convDP5(w1[0, 1] * P5 + w1[1, 1] * nn.functional.interpolate(DP6, scale_factor=2))
         DP4 = self.convDP4(w1[0, 2] * P4 + w1[1, 2] * nn.functional.interpolate(DP5, scale_factor=2))
         DP3 = self.convDP3(w1[0, 3] * P3 + w1[1, 3] * nn.functional.interpolate(DP4, scale_factor=2))
-        DP2 = self.convDP2(w1[0, 4] * P2 + w1[1, 4] * nn.functional.interpolate(DP3, scale_factor=2))
-            
-        # DP7 = P7
-        # DP6 = self.convDP6(P6 + nn.functional.interpolate(DP7, scale_factor=2))
-        # DP5 = self.convDP5(P5 + nn.functional.interpolate(DP6, scale_factor=2))
-        # DP4 = self.convDP4(P4 + nn.functional.interpolate(DP5, scale_factor=2))
-        # DP3 = self.convDP3(P3 + nn.functional.interpolate(DP4, scale_factor=2))
-        # DP2 = self.convDP2(P2 + nn.functional.interpolate(DP3, scale_factor=2))    
+        DP2 = self.convDP2(w1[0, 4] * P2 + w1[1, 4] * nn.functional.interpolate(DP3, scale_factor=2)) 
                 
         # Bottom-up pathway
         UP2 = DP2
@@ -80,13 +73,7 @@ class BiFPNBlock(torch.nn.Module):
         UP5 = self.convUP5(w2[0, 2] * DP5 + w2[1, 2] * P5 + w2[2, 2] * nn.Upsample(scale_factor=0.5)(UP4))
         UP6 = self.convUP6(w2[0, 3] * DP6 + w2[1, 3] * P6 + w2[2, 3] * nn.Upsample(scale_factor=0.5)(UP5))
         UP7 = self.convUP7(w2[0, 4] * DP7 + w2[1, 4] * P7 + w2[2, 4] * nn.Upsample(scale_factor=0.5)(UP6))
-        
-        # UP2 = DP2
-        # UP3 = self.convUP3(DP3 + P3 + nn.Upsample(scale_factor=0.5)(UP2))
-        # UP4 = self.convUP4(DP4 + P4 + nn.Upsample(scale_factor=0.5)(UP3))
-        # UP5 = self.convUP5(DP5 + P5 + nn.Upsample(scale_factor=0.5)(UP4))
-        # UP6 = self.convUP6(DP6 + P6 + w2[2, 3] * nn.Upsample(scale_factor=0.5)(UP5))
-        # UP7 = self.convUP7(w2[0, 4] * DP7 + w2[1, 4] * P7 + w2[2, 4] * nn.Upsample(scale_factor=0.5)(UP6))     
+      
                 
         return [UP2, UP3, UP4, UP5, UP6, UP7]
         
@@ -172,17 +159,6 @@ class FPN(torch.nn.Module):
         #BiFPN        
         BiFPNout = self.biFPNs([P2, P3, P4, P5, P6, P7])        
         
-        ## CAM
-        # from pytorch_grad_cam import GradCAM
-        # from pytorch_grad_cam.utils.model_targets import ClassifierOutputTarget
-        # from pytorch_grad_cam.utils.image import show_cam_on_image
-        #
-        # targets = [Class(9)]
-        # cam = GradCAM(self.feature_extractorFPN)
-        # cam_output = cam(input_tensor=x, targets=targets)
-        # cam_output = cam_output[0, :]
-        # viz = show_cam_on_image(rgb_img, cam_output, use_rgb=True)
-                
         return tuple(BiFPNout)
         
         ## FPN

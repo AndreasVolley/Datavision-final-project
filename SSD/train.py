@@ -126,17 +126,12 @@ def train(config_path: Path, evaluate_only: bool):
     for i in range(10):
         data = next(dataVal)
         img = data['image']
+        annot = data['boxes']
         
         print("############################################################")
         print("img: ", img.shape)
         print("############################################################")
-        
-    # for i in range(49):
-    #     data = next(datal)['image']
-    #     print("############################################################")
-    #     print(data.shape)
-    #     print("############################################################")
-    
+            
     
     
     for epoch in range(start_epoch, cfg.train.epochs):
