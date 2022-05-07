@@ -17,8 +17,9 @@ train.imshape = (128, 1024)
 from tops.config import LazyCall as L
 import torch
 import numpy as np
-from ssd.modeling.backbones.ResNet import FPN
+from ssd.modeling.backbones.fpn_shallow import FPN
 
 backbone = L(FPN)(
-    output_channels = [64, 128, 256, 512, 64, 64]
+    output_channels = [64, 64, 64, 64, 64, 64],
+    flag = "fpn"
 )
