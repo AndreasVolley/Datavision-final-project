@@ -20,7 +20,6 @@ class FPN(torch.nn.Module):
         # self.output_feature_shape = output_feature_sizes
 
         self.oldModel = torchvision.models.resnet34(pretrained=True)
-        # self.model = torch.nn.Sequential(*(list(self.oldmodel.children())[4:-2]))
         
         if self.flag == "fpn":
             chan = 64

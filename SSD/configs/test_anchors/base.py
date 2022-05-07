@@ -1,6 +1,9 @@
 from ssd.modeling import AnchorBoxes
 from tops.config import LazyCall as L
 # The line belows inherits the configuration set for the tdt4265 dataset
+
+## Change to different dataset
+# from ..tdt4265_updated import (
 from ..tdt4265 import (
     train,
     optimizer,
