@@ -26,41 +26,30 @@ class RetinaNet(nn.Module):
         
         
         self.regression_heads = nn.Sequential(
-            
-            nn.Conv2d(256, 256, kernel_size=3, stride=1, padding=1),
-            #nn.BatchNorm2d(256),
-            nn.GELU(),
-
-            nn.Conv2d(256, 256, kernel_size=3, stride=1, padding=1),
-            nn.GELU(),
-
-            nn.Conv2d(256, 256, kernel_size=3, stride=1, padding=1),
-            nn.GELU(),
-            #nn.Dropout2d(p=0.05),
-
-            nn.Conv2d(256, 6 * 4, kernel_size=3, stride=1, padding=1),
+            nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1),
+            nn.ReLU(),
+            nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1),
+            nn.ReLU(),
+            nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1),
+            nn.ReLU(),
+            nn.Conv2d(64, 6 * 4, kernel_size=3, stride=1, padding=1),
         )
         
         self.classification_heads = nn.Sequential(
-            nn.Conv2d(256, 256, kernel_size=3, stride=1, padding=1),
-            #nn.BatchNorm2d(256),
-            nn.GELU(),
-            
-            nn.Conv2d(256, 256, kernel_size=3, stride=1, padding=1),
-            nn.GELU(),
-
-            nn.Conv2d(256, 256, kernel_size=3, stride=1, padding=1),
-            nn.GELU(),
-            #nn.Dropout2d(p=0.05),
-
-            nn.Conv2d(256, 6 * self.num_classes, kernel_size=3, stride=1, padding=1),
+            nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1),
+            nn.ReLU(),
+            nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1),
+            nn.ReLU(),
+            nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1),
+            nn.ReLU(),
+            nn.Conv2d(64, 6 * self.num_classes, kernel_size=3, stride=1, padding=1),
         )
         
         # Initialize output heads that are applied to each feature map from the backbone.
 
-        for n_boxes, out_ch in zip(anchors.num_boxes_per_fmap, self.feature_extractor.out_channels):
-            self.regression_heads.append(nn.Conv2d(out_ch, n_boxes * 4, kernel_size=3, padding=1))
-            self.classification_heads.append(nn.Conv2d(out_ch, n_boxes * self.num_classes, kernel_size=3, padding=1))
+        # for n_boxes, out_ch in zip(anchors.num_boxes_per_fmap, self.feature_extractor.out_channels):
+        #     self.regression_heads.append(nn.Conv2d(out_ch, n_boxes * 4, kernel_size=3, padding=1))
+        #     self.classification_heads.append(nn.Conv2d(out_ch, n_boxes * self.num_classes, kernel_size=3, padding=1))
 
         # self.regression_heads = nn.ModuleList(self.regression_heads)
         # self.classification_heads = nn.ModuleList(self.classification_heads)

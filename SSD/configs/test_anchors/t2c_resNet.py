@@ -17,13 +17,8 @@ train.imshape = (128, 1024)
 from tops.config import LazyCall as L
 import torch
 import numpy as np
-from ssd.modeling.backbones.fpn_shallow import FPN
-from ssd.modeling.focalLoss import FocalLoss
+from ssd.modeling.backbones.ResNet import FPN
 
 backbone = L(FPN)(
-    output_channels = [64, 64, 64, 64, 64, 64], 
-    # output_channels = [256, 256, 256, 256, 256, 256]      #Change according to the output of the backbone. [64, 128, 256, 512, 64, 64]
+    output_channels = [64, 128, 256, 512, 64, 64]
 )
-
-loss_objective = L(FocalLoss)(anchors="${anchors}", alpha=torch.tensor([10, *[1000 for i in range(model.num_classes-1)]]))
-
