@@ -64,14 +64,7 @@ class BiFPNBlock(torch.nn.Module):
         DP5 = self.convDP5(w1[0, 1] * P5 + w1[1, 1] * nn.functional.interpolate(DP6, scale_factor=2))
         DP4 = self.convDP4(w1[0, 2] * P4 + w1[1, 2] * nn.functional.interpolate(DP5, scale_factor=2))
         DP3 = self.convDP3(w1[0, 3] * P3 + w1[1, 3] * nn.functional.interpolate(DP4, scale_factor=2))
-        DP2 = self.convDP2(w1[0, 4] * P2 + w1[1, 4] * nn.functional.interpolate(DP3, scale_factor=2))
-            
-        # DP7 = P7
-        # DP6 = self.convDP6(P6 + nn.functional.interpolate(DP7, scale_factor=2))
-        # DP5 = self.convDP5(P5 + nn.functional.interpolate(DP6, scale_factor=2))
-        # DP4 = self.convDP4(P4 + nn.functional.interpolate(DP5, scale_factor=2))
-        # DP3 = self.convDP3(P3 + nn.functional.interpolate(DP4, scale_factor=2))
-        # DP2 = self.convDP2(P2 + nn.functional.interpolate(DP3, scale_factor=2))    
+        DP2 = self.convDP2(w1[0, 4] * P2 + w1[1, 4] * nn.functional.interpolate(DP3, scale_factor=2)) 
                 
         # Bottom-up pathway
         UP2 = DP2
@@ -80,13 +73,7 @@ class BiFPNBlock(torch.nn.Module):
         UP5 = self.convUP5(w2[0, 2] * DP5 + w2[1, 2] * P5 + w2[2, 2] * nn.Upsample(scale_factor=0.5)(UP4))
         UP6 = self.convUP6(w2[0, 3] * DP6 + w2[1, 3] * P6 + w2[2, 3] * nn.Upsample(scale_factor=0.5)(UP5))
         UP7 = self.convUP7(w2[0, 4] * DP7 + w2[1, 4] * P7 + w2[2, 4] * nn.Upsample(scale_factor=0.5)(UP6))
-        
-        # UP2 = DP2
-        # UP3 = self.convUP3(DP3 + P3 + nn.Upsample(scale_factor=0.5)(UP2))
-        # UP4 = self.convUP4(DP4 + P4 + nn.Upsample(scale_factor=0.5)(UP3))
-        # UP5 = self.convUP5(DP5 + P5 + nn.Upsample(scale_factor=0.5)(UP4))
-        # UP6 = self.convUP6(DP6 + P6 + w2[2, 3] * nn.Upsample(scale_factor=0.5)(UP5))
-        # UP7 = self.convUP7(w2[0, 4] * DP7 + w2[1, 4] * P7 + w2[2, 4] * nn.Upsample(scale_factor=0.5)(UP6))     
+      
                 
         return [UP2, UP3, UP4, UP5, UP6, UP7]
         
@@ -112,39 +99,39 @@ class FPN(torch.nn.Module):
             self.oldModel.maxpool,
             self.oldModel.layer1,
         )
-        nn.GELU(),
-        nn.Dropout2d(p=0.2),
+        #nn.GELU(),
+        #nn.Dropout2d(p=0.2),
         self.feature_extractorP3 = torch.nn.Sequential(self.oldModel.layer2)                # 16x128
-        nn.GELU(),
-        nn.Dropout2d(p=0.2),
+        #nn.GELU(),
+        #nn.Dropout2d(p=0.2),
         self.feature_extractorP4 = torch.nn.Sequential(self.oldModel.layer3)                # 8x64
-        nn.GELU(),
-        nn.Dropout2d(p=0.2),
+        #nn.GELU(),
+        #nn.Dropout2d(p=0.2),
         self.feature_extractorP5 = torch.nn.Sequential(self.oldModel.layer4)                # 4x32
-        nn.GELU(),
-        nn.Dropout2d(p=0.2),
+        #nn.GELU(),
+        #nn.Dropout2d(p=0.2),
 
         self.feature_extractorP6 = torch.nn.Sequential(                                     # 2x16
             nn.Conv2d(
                 in_channels=512,
-                out_channels=256,  
+                out_channels=64,  
                 kernel_size=3,
                 stride=2,
                 padding=1
             ),
-            nn.BatchNorm2d(256),
-            nn.GELU(),
+            #nn.BatchNorm2d(256),
+            #nn.GELU(),
         )
         self.feature_extractorP7 = torch.nn.Sequential(                                    # 1x8
             nn.Conv2d(
-                in_channels=256,
-                out_channels=256,
+                in_channels=64,
+                out_channels=64,
                 kernel_size=3,
                 stride=2,
                 padding=1
             ),
-            nn.GELU(),
-            nn.Dropout2d(p=0.05)
+            #nn.GELU(),
+            #nn.Dropout2d(p=0.05)
     
         )
         
@@ -155,14 +142,16 @@ class FPN(torch.nn.Module):
         self.convP3 = torch.nn.Conv2d(in_channels=128, out_channels=256, kernel_size=1, stride=1)
         self.convP2 = torch.nn.Conv2d(in_channels=64, out_channels=256, kernel_size=1, stride=1)
         
-        bifpns = []
-        for _ in range(6):
-            bifpns.append(BiFPNBlock())
-       
-        self.biFPNs = nn.Sequential(*bifpns)
         
-        # Extract features from P2-P7
-        self.feature_extractorFPN = torchvision.ops.FeaturePyramidNetwork([64, 128, 256, 512, 256, 256], 256)
+        ## BiFPN
+        # bifpns = []
+        # for _ in range(3):
+        #    bifpns.append(BiFPNBlock())
+       
+        # self.biFPNs = nn.Sequential(*bifpns)
+        
+        # FPN
+        self.feature_extractorFPN = torchvision.ops.FeaturePyramidNetwork([64, 128, 256, 512, 64, 64], 64)
 
     def forward(self, x):
 
@@ -174,7 +163,11 @@ class FPN(torch.nn.Module):
         P6 = self.feature_extractorP6(P5)
         P7 = self.feature_extractorP7(P6)
         
+<<<<<<< HEAD
         # After this 256 feature maps
+=======
+        # After this all feature maps has depth of 256
+>>>>>>> 5c4fbbc00a26bb37f28767f76a4fd3c80f021a85
         # P2 = self.convP2(P2)
         # P3 = self.convP3(P3)
         # P4 = self.convP4(P4)
@@ -183,6 +176,7 @@ class FPN(torch.nn.Module):
         # P7 = self.convP7(P7)
         
             
+<<<<<<< HEAD
         #BiFPN        
         #BiFPNout = self.biFPNs([P2, P3, P4, P5, P6, P7])        
         
@@ -198,21 +192,28 @@ class FPN(torch.nn.Module):
         # viz = show_cam_on_image(rgb_img, cam_output, use_rgb=True)
                 
         #return tuple(BiFPNout)
+=======
+        # # BiFPN        
+        # BiFPNout = self.biFPNs([P2, P3, P4, P5, P6, P7])        
+        # return tuple(BiFPNout)
+>>>>>>> 5c4fbbc00a26bb37f28767f76a4fd3c80f021a85
         
         ## FPN
-        FeatureMaps = OrderedDict()
-        FeatureMaps['P2'] = P2
-        FeatureMaps['P3'] = P3
-        FeatureMaps['P4'] = P4
-        FeatureMaps['P5'] = P5
-        FeatureMaps['P6'] = P6
-        FeatureMaps['P7'] = P7
+        # FeatureMaps = OrderedDict()
+        # FeatureMaps['P2'] = P2
+        # FeatureMaps['P3'] = P3
+        # FeatureMaps['P4'] = P4
+        # FeatureMaps['P5'] = P5
+        # FeatureMaps['P6'] = P6
+        # FeatureMaps['P7'] = P7
         
-        outFeatures = []
-        FPNout = self.feature_extractorFPN(FeatureMaps)
+        # outFeatures = []
+        # FPNout = self.feature_extractorFPN(FeatureMaps)
 
-        for _, v in FPNout.items():
-            outFeatures.append(v)
+        # for _, v in FPNout.items():
+        #     outFeatures.append(v)
         
-        return tuple(outFeatures)
+        # return tuple(outFeatures)
         
+        
+        return tuple([P2, P3, P4, P5, P6, P7])

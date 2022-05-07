@@ -12,7 +12,7 @@ from .t2c_fpn_focal import (
     anchors)
 
 from tops.config import LazyCall as L
-from ssd.modeling.retinaNet import RetinaNet
+from ssd.modeling.retinaNet_shallow import RetinaNet
 
 train.imshape = (128, 1024)
 anchors.aspect_ratios = [[2, 3], [2, 3], [2, 3], [2, 3], [2, 3], [2, 3]]

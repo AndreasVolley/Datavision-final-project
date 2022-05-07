@@ -12,13 +12,13 @@ from .t2c_fpn_focal import (
     anchors)
 
 from tops.config import LazyCall as L
-from ssd.modeling.retinaNet import RetinaNet
+from ssd.modeling.retinaNet_shallow import RetinaNet
 
 train.imshape = (128, 1024)
 
 anchors.aspect_ratios=[[2, 3], [2, 3], [2, 3], [2, 3], [2, 3], [2, 3]]
 #anchors.min_sizes=[[16, 16], [32, 32], [48, 48], [64, 64], [86, 86], [128, 128], [128, 400]]
-#anchors.min_sizes=[[14, 14], [30, 30], [43, 43], [60, 60], [86, 86], [128, 128], [128, 400]]
+
 
 model = L(RetinaNet)(
     feature_extractor=backbone,

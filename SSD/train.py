@@ -113,30 +113,25 @@ def train(config_path: Path, evaluate_only: bool):
     dataTrain = iter(dataloader_train)
     dataVal = iter(dataloader_val)
     
-    for i in range(50):
-        data = next(dataTrain)
-        img = data['image']
-        annot = data['boxes']
+    # for i in range(50):
+    #     data = next(dataTrain)
+    #     img = data['image']
+    #     annot = data['boxes']
     
-        print("############################################################")
-        print("img: ", img.shape)
-        print("annot: ", annot.shape)
-        print("############################################################")
-        
-    for i in range(10):
-        data = next(dataVal)
-        img = data['image']
-        
-        print("############################################################")
-        print("img: ", img.shape)
-        print("############################################################")
-        
-    # for i in range(49):
-    #     data = next(datal)['image']
     #     print("############################################################")
-    #     print(data.shape)
+    #     print("img: ", img.shape)
+    #     print("annot: ", annot.shape)
     #     print("############################################################")
-    
+        
+    # for i in range(10):
+    #     data = next(dataVal)
+    #     img = data['image']
+    #     annot = data['boxes']
+        
+    #     print("############################################################")
+    #     print("img: ", img.shape)
+    #     print("############################################################")
+            
     
     
     for epoch in range(start_epoch, cfg.train.epochs):
