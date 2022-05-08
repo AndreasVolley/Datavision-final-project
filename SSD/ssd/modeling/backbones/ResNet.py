@@ -62,5 +62,4 @@ class FPN(torch.nn.Module):
         P6 = self.feature_extractorP6(P5)
         P7 = self.feature_extractorP7(P6)
         
-        
         return tuple([P2, P3, P4, P5, P6, P7])

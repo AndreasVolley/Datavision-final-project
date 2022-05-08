@@ -61,7 +61,7 @@ class SSDMultiboxLoss(nn.Module):
             confs: [batch_size, num_classes, num_anchors]
             gt_bbox: [batch_size, num_anchors, 4]
             gt_label = [batch_size, num_anchors]
-        """
+        """        
         gt_bbox = gt_bbox.transpose(1, 2).contiguous() # reshape to [batch_size, 4, num_anchors]
         with torch.no_grad():
             to_log = - F.log_softmax(confs, dim=1)[:, 0]

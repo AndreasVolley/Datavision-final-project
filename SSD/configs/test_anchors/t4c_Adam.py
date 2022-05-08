@@ -1,4 +1,4 @@
-from .t2d_deepFPN_AB import (
+from .t2d_deepFPN_AB_deepHead_aspect import (
     train, optimizer, schedulers,
     loss_objective,
     model, 
@@ -12,19 +12,13 @@ from .t2d_deepFPN_AB import (
     anchors)
 
 from tops.config import LazyCall as L
+import torch
 from ssd.modeling.retinaNet_shallow import RetinaNet
+from ssd.modeling.backbones.fpn_shallow import FPN
 
 train.imshape = (128, 1024)
 
-model = L(RetinaNet)(
-    feature_extractor=backbone,
-    anchors=anchors,
-    loss_objective=loss_objective,
-    num_classes = 9,
-    anchor_prob_initialization = True,
-    flag = "deepHeads",
+optimizer = L(torch.optim.Adam)(
+    lr=4e-4,
+    #weight_decay=0.0005
 )
-
-
-
-

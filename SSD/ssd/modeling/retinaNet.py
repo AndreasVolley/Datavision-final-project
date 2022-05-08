@@ -48,6 +48,9 @@ class RetinaNet(nn.Module):
             nn.Conv2d(256, 6 * self.num_classes, kernel_size=3, stride=1, padding=1),
         )
         
+        
+        
+        
         self.anchor_encoder = AnchorEncoder(anchors)
         self._init_weights()
 
